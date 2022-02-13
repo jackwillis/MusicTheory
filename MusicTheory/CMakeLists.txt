@@ -15,8 +15,8 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Main executable
 #
-add_executable (CMakeProject1 "CMakeProject1.cpp" "CMakeProject1.h" "Tuning.h" "Tuning.cpp")
+add_executable (ScalaParser "Scala.cpp" "Tuning.h" "Tuning.cpp")
 
 # Link libraries
 #
-target_link_libraries(CMakeProject1 PRIVATE Boost::boost)
+target_link_libraries(ScalaParser PRIVATE Boost::boost)

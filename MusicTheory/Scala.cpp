@@ -1,12 +1,13 @@
-﻿// CMakeProject1.cpp : Defines the entry point for the application.
+﻿//  Scala.cpp : Scala scale file parser
 //
 
-#include "CMakeProject1.h"
+#include "Tuning.h"
+#include <iostream>
 
 int main()
 {
-    using ::Tuning::Tuning;
-    using ::Tuning::TuningInterval;
+    using MusicTheory::Tuning;
+    using MusicTheory::TuningInterval;
 
     const Tuning bremmer_ebvt3 = Tuning{
       "bremmer_ebvt3.scl",

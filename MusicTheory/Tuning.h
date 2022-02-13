@@ -8,8 +8,8 @@
 #include <variant>
 #include <vector>
 
-namespace Tuning {
-	typedef double Cents;
+namespace MusicTheory {
+	typedef double Cents; // percent of a semitone
 	typedef boost::rational<int> Ratio;
 
 	class TuningInterval
@@ -26,9 +26,9 @@ namespace Tuning {
 		auto ratio() const -> Ratio;
 		auto ratio_as_double() const -> double;
 
-		auto transpose_octaves(int octaves) const -> TuningInterval;
+		auto add_octaves(int octaves) const -> TuningInterval;
 
-		friend std::ostream& operator<<(std::ostream& os, const TuningInterval& interval);
+		auto friend operator<<(std::ostream& os, const TuningInterval& interval) -> std::ostream&;
 	};
 
 	class Tuning

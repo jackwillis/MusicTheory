@@ -1,6 +1,6 @@
 #include "Tuning.h"
 
-namespace Tuning {
+namespace MusicTheory {
 	using boost::hana::overload;
 
 	const int CENTS_PER_OCTAVE = 1200;
@@ -24,17 +24,30 @@ namespace Tuning {
 		), this->v);
 	}
 
+	// See https://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
+	//
+	auto almost_equal(double x, double y, int ulp = 1) -> bool
+	{
+		// the machine epsilon has to be scaled to the magnitude of the values used
+		// and multiplied by the desired precision in ULPs (units in the last place)
+		return std::fabs(x - y) <= std::numeric_limits<double>::epsilon() * std::fabs(x + y) * ulp
+			// unless the result is subnormal
+			|| std::fabs(x - y) < std::numeric_limits<double>::min();
+	}
+
 	// Farey algorithm: find closest rational to double in [0, 1]
 	// http://www.johndcook.com/blog/2010/10/20/best-rational-approximation/
 	//
 	auto farey(double x, int max_denom) -> boost::rational<int>
 	{
 		int a = 0, b = 1, c = 1, d = 1;
-		double mediant;
+		double dividend, divisor, mediant;
 		while (b <= max_denom && d <= max_denom)
 		{
-			mediant = (double)(a + c) / (double)(b + d);
-			if (x == mediant)
+			dividend = static_cast<double>(static_cast<uint64_t>(a) + c);
+			divisor = static_cast<double>(static_cast<uint64_t>(b) + d);
+			mediant = dividend / divisor;
+			if (almost_equal(x, mediant))
 			{
 				if (b + d <= max_denom) return boost::rational<int>{a + c, b + d};
 				else if (d > b) return boost::rational<int>{c, d};
@@ -73,7 +86,9 @@ namespace Tuning {
 		), this->v);
 	}
 
+	// Integer power
 	// https://stackoverflow.com/a/17504209
+	//
 	int powi(int base, unsigned int exp)
 	{
 		int res = 1;
@@ -86,26 +101,31 @@ namespace Tuning {
 		return res;
 	}
 
-	auto TuningInterval::transpose_octaves(int octaves) const -> TuningInterval
+	// Add octaves to tuning interval
+	//
+	auto TuningInterval::add_octaves(int octaves) const -> TuningInterval
 	{
 		return std::visit(overload(
-			[&octaves](Cents cents) -> TuningInterval {
-				return TuningInterval{ cents + (octaves * CENTS_PER_OCTAVE) };
+			[&octaves](Cents cents) {
+				// add cents
+				long int addend = octaves * CENTS_PER_OCTAVE;
+				return TuningInterval{ cents + addend };
 			},
-			[&octaves](Ratio ratio) -> TuningInterval {
+			[&octaves](Ratio ratio) {
 				if (octaves == 0) {
+					// return copy
 					return TuningInterval{ ratio };
 				}
 				else if (octaves > 0) {
-					// multiply ratio by 2^octaves
 					return TuningInterval{
+						// multiply ratio by 2^octaves
 						ratio.numerator() * powi(2, octaves),
 						ratio.denominator()
 					};
 				}
-				else {
-					// multiply ratio by (1/2)^-octaves
+				else /* if (octaves < 0) */ {
 					return TuningInterval{
+						// divide ratio by 2^|octaves|
 						ratio.numerator(),
 						ratio.denominator() * powi(2, -octaves)
 					};
@@ -114,7 +134,7 @@ namespace Tuning {
 			), this->v);
 	}
 
-	std::ostream& operator<<(std::ostream& os, const TuningInterval& interval)
+	auto operator<<(std::ostream& os, const TuningInterval& interval) -> std::ostream&
 	{
 		std::visit(overload(
 			[&os](Cents cents) { os << cents; },
@@ -151,7 +171,7 @@ namespace Tuning {
 			const int index = euclidean_remainder(n - 1, this->degree());
 			const auto& interval = this->intervals.at(index);
 
-			return interval.transpose_octaves(octave);
+			return interval.add_octaves(octave);
 		}
 	}
 
