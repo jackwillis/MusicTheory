@@ -4,9 +4,7 @@
 #include <boost/rational.hpp>
 
 #include <cmath>
-#include <iostream>
 #include <ostream>
-#include <sstream>
 #include <variant>
 #include <vector>
 
