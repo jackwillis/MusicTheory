@@ -50,5 +50,4 @@ namespace MusicTheory {
 		void stream_scala(std::ostream& out) const;
 		void stream_table(std::ostream& out) const;
 	};
-
 }

@@ -107,9 +107,9 @@ namespace MusicTheory {
 	{
 		return std::visit(overload(
 			[&octaves](Cents cents) {
-				// add cents
-				long int addend = octaves * CENTS_PER_OCTAVE;
-				return TuningInterval{ cents + addend };
+				// type conversion
+				long int more_cents = octaves * CENTS_PER_OCTAVE;
+				return TuningInterval{ cents + more_cents };
 			},
 			[&octaves](Ratio ratio) {
 				if (octaves == 0) {
@@ -131,9 +131,11 @@ namespace MusicTheory {
 					};
 				}
 			}
-			), this->v);
+		), this->v);
 	}
 
+	// ostream stream operator
+	//
 	auto operator<<(std::ostream& os, const TuningInterval& interval) -> std::ostream&
 	{
 		std::visit(overload(
@@ -151,6 +153,7 @@ namespace MusicTheory {
 	}
 
 	// https://stackoverflow.com/a/11714601/3551701
+	//
 	auto euclidean_remainder(int a, int b) -> int
 	{
 		assert(b != 0);
@@ -158,27 +161,33 @@ namespace MusicTheory {
 		return r >= 0 ? r : r + std::abs(b);
 	}
 
+	// Domain of n is Z.
+	// Get the nth pitch in an infinitely repeating tuning.
+	//
 	auto Tuning::at(int n) const -> TuningInterval
 	{
 		if (n == 0) {
+			// additive identity
 			return TuningInterval{ 1, 1 };
 		}
 		else {
+			const int base_index = euclidean_remainder(n - 1, this->degree());
+			const auto& base_interval = this->intervals.at(base_index);
+
 			const int octave = n < 0 ?
 				n / this->degree() - 1 :
 				(n - 1) / this->degree();
 
-			const int index = euclidean_remainder(n - 1, this->degree());
-			const auto& interval = this->intervals.at(index);
-
-			return interval.add_octaves(octave);
+			return base_interval.add_octaves(octave);
 		}
 	}
 
+	// Stream the tuning to an output stream, in Scala scale format.
+	//
 	void Tuning::stream_scala(std::ostream& out) const
 	{
 		out << "! "
-			<< this->name << "\n! \n"
+			<< this->name << "\n!\n"
 			<< this->description << '\n'
 			<< this->degree() << "\n!\n";
 
@@ -188,6 +197,8 @@ namespace MusicTheory {
 		}
 	}
 
+	// Stream a synopsis of the tuning to an output stream.
+	//
 	void Tuning::stream_table(std::ostream& out) const
 	{
 		const auto small_pad = std::setw(6);

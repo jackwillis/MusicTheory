@@ -11,8 +11,8 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 # Main executable
 #
-add_executable (ScalaParser "Scala.cpp" "Tuning.h" "Tuning.cpp")
+add_executable (MusicTheoryTest "MusicTheoryTest.cpp" "../MusicTheory/Tuning.h" "../MusicTheory/Tuning.cpp")
 
 # Link libraries
 #
-target_link_libraries(ScalaParser PRIVATE Boost::boost)
+target_link_libraries(MusicTheoryTest PRIVATE Boost::boost)
